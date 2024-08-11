@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please add the correct password"],
     },
     uniqueId: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },

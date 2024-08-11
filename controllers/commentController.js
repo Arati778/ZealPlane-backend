@@ -13,30 +13,31 @@ const addComment = asyncHandler(async (req, res) => {
     throw new Error('User ID, Project ID, and comment are required');
   }
 
-  // Validate that the project exists
-  const projectExists = await Project.findById(projectId);
-  if (!projectExists) {
-    res.status(404);
-    throw new Error('Project not found');
-  }
-
   // Validate that the user exists
-  const userExists = await User.findById(userId);
-  if (!userExists) {
+  const user = await User.findById(userId);
+  if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
 
+  // Create a new comment
   const newComment = new Comment({
     userId,
     projectId,
     comment,
   });
 
+  // Save the comment
   const createdComment = await newComment.save();
-  res.status(201).json(createdComment);
-});
 
+  // Include username and profilePic in the response
+  res.status(201).json({
+    ...createdComment.toObject(),
+    username: user.username,
+    profilePic: user.profilePic,
+  });
+});
+  
 // Get all comments for a project
 const getCommentsByProjectId = asyncHandler(async (req, res) => {
   const { projectId } = req.params;

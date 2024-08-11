@@ -6,6 +6,7 @@ const {
   getProjectsByUsername,
   createProject,
   updateProject,
+  addThumbnailImage,
 } = require("../controllers/projectController");
 
 // Middleware for handling file uploads
@@ -21,9 +22,11 @@ router.get("/id/:projectId", getProjectById);
 router.get("/username/:username", getProjectsByUsername);
 
 // Route to create a new project
-router.post("/", projectUpload.single("thumbnailImage"), createProject);
+router.post("/", projectUpload.singleThumbnail, createProject);
 
 // Route to update project by projectId
-router.put("/id/:projectId", projectUpload.single("thumbnailImage"), updateProject);
+router.put("/id/:projectId", [projectUpload.singleThumbnail, projectUpload.multipleImages], updateProject);
+
+router.post("/id/:projectId", projectUpload.singleThumbnail, addThumbnailImage);
 
 module.exports = router;

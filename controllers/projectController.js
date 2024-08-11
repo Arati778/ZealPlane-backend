@@ -289,9 +289,9 @@
 // //   updateProject,
 // //   deleteProject,
 // // };
-const asyncHandler = require("express-async-handler");
-const mongoose = require("mongoose");
-const Project = require("../models/projectModel");
+const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose');
+const Project = require('../models/projectModel');
 
 // Get all projects
 const getAllProjects = async (req, res) => {
@@ -308,7 +308,7 @@ const getProjectById = async (req, res) => {
   try {
     const project = await Project.findOne({ projectId: req.params.projectId });
     if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+      return res.status(404).json({ message: 'Project not found' });
     }
     res.json(project);
   } catch (err) {
@@ -321,7 +321,7 @@ const getProjectsByUsername = async (req, res) => {
   try {
     const projects = await Project.find({ username: req.params.username });
     if (projects.length === 0) {
-      return res.status(404).json({ message: "No projects found for this username" });
+      return res.status(404).json({ message: 'No projects found for this username' });
     }
     res.json(projects);
   } catch (err) {
@@ -342,16 +342,19 @@ const createProject = async (req, res) => {
     teammates,
     ratings,
   } = req.body;
+
   const thumbnailImage = req.file ? req.file.path : null;
+  const images = req.files ? req.files.map(file => file.path) : [];
 
   if (!id || !username) {
-    return res.status(400).json({ message: "Username and id are required." });
+    return res.status(400).json({ message: 'Username and id are required.' });
   }
 
   const project = new Project({
     name,
     description,
     thumbnailImage,
+    images,
     username,
     projectId: new mongoose.Types.ObjectId(),
     id,
@@ -369,38 +372,86 @@ const createProject = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+const addThumbnailImage = async (req, res) => {
+  try {
+    const { projectId } = req.body;
 
-// Update an existing project
+    console.log('Received request to add a thumbnail image.');
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
+
+    const newThumbnail = req.file ? req.file.path : null;
+    console.log('New thumbnail path:', newThumbnail);
+
+    if (!newThumbnail) {
+      console.log('No thumbnail image uploaded.');
+      return res.status(400).json({ message: 'No thumbnail image uploaded.' });
+    }
+
+    // Ensure the projectId is provided
+    if (!projectId) {
+      console.log('No projectId provided.');
+      return res.status(400).json({ message: 'Project ID is required.' });
+    }
+
+    // Convert projectId to ObjectId and attempt to find and update the project with the new thumbnail image
+    const updatedProject = await Project.findOneAndUpdate(
+      { projectId: new mongoose.Types.ObjectId(projectId) },
+      { $push: { thumbnailImages: newThumbnail } }, // Use $push to add the new thumbnail image to the array
+      { new: true } 
+    );
+
+    if (!updatedProject) {
+      console.log(`Project with ID ${projectId} not found.`);
+      return res.status(404).json({ message: 'Project not found.' });
+    }
+
+    console.log('Project updated successfully:', updatedProject);
+    res.status(200).json(updatedProject);
+  } catch (err) {
+    console.error('Error occurred while updating the project:', err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
 const updateProject = async (req, res) => {
   const {
     name,
     description,
-    username,
     tags,
     subtags,
     publisher,
     teammates,
     ratings,
   } = req.body;
-  const thumbnailImage = req.file ? req.file.path : null;
+
+  // Extract the Cloudinary URLs of uploaded files
+  const thumbnailImage = req.file ? req.file.path : null; // req.file.path is the URL for Cloudinary
+  const additionalImages = req.files ? req.files.map(file => file.path) : []; // req.files.map(file => file.path) gives URLs
 
   try {
+    // Find the project to update
     const project = await Project.findOne({ projectId: req.params.projectId });
 
     if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+      return res.status(404).json({ message: 'Project not found' });
     }
 
+    // Update the project's fields
     project.name = name || project.name;
     project.description = description || project.description;
     project.thumbnailImage = thumbnailImage || project.thumbnailImage;
-    project.username = username || project.username;
+    project.images = additionalImages.length > 0 ? [...project.images, ...additionalImages] : project.images;
     project.tags = tags || project.tags;
     project.subtags = subtags || project.subtags;
     project.publisher = publisher || project.publisher;
     project.teammates = teammates || project.teammates;
     project.ratings = ratings || project.ratings;
 
+    // Save the updated project
     const updatedProject = await project.save();
     res.json(updatedProject);
   } catch (err) {
@@ -408,10 +459,12 @@ const updateProject = async (req, res) => {
   }
 };
 
+
 module.exports = {
   getAllProjects,
   getProjectById,
   getProjectsByUsername,
   createProject,
   updateProject,
+  addThumbnailImage
 };

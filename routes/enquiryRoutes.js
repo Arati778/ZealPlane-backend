@@ -6,7 +6,7 @@ const {
   removeEnquiry,
 } = require('../controllers/enquiryController');
 
-router.post('/', addEnquiry);
+router.post('/enquiry', addEnquiry);
 router.get('/project/:projectId', getEnquiriesByProjectId);
 router.delete('/:enquiryId', removeEnquiry);
 

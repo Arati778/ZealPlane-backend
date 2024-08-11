@@ -13,18 +13,11 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "project_images", // Set the folder to project_images
+    folder: "project_Images",
     allowed_formats: ["jpg", "png"],
   },
 });
 
-// Initialize multer with Cloudinary storage
 const upload = multer({ storage: storage });
 
-// Middleware to handle single thumbnail image and multiple additional images
-const projectUpload = {
-  singleThumbnail: upload.single('thumbnailImage'),
-  multipleImages: upload.array('additionalImages', 10) // Handle up to 10 additional images
-};
-
-module.exports = projectUpload;
+module.exports = upload;

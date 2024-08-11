@@ -1,25 +1,34 @@
-const express = require('express');
-const { registerUser, loginUser, currentUser, getUserById, updateUser, deleteUser } = require('./controllers/userController');
-const upload = require('./midleware/upload'); // Import the configured multer instance
+const express = require("express");
+const {
+  registerUser,
+  loginUser,
+  currentUser,
+  getUserById,
+  updateUser,
+  deleteUser,
+} = require("./controllers/userController");
+const upload = require("./midleware/upload"); // Import the configured multer instance
+const ValidateToken = require("./midleware/validateTokenHandler");
 
 const router = express.Router();
 
-// Register route
-router.post('/register', registerUser);
+// Register route   
+router.post("/register", registerUser);
 
 // Login route
-router.post('/login', loginUser);
+router.post("/login", loginUser);
 
 // Get current user route
-router.get('/me', currentUser);
+router.get("/me", ValidateToken, currentUser);
 
 // Get user by ID
-router.get('/:id', getUserById);
+router.get("/:id", getUserById);
 
 // Update user (with profilePic upload)
-router.put('/:id', upload.single('profilePic'), updateUser);
+// Ensure token is validated before handling file upload
+router.put("/:id", upload.single("profilePic"), ValidateToken, updateUser);
 
 // Delete user
-router.delete('/:id', deleteUser);
+router.delete("/:id", ValidateToken, deleteUser);
 
 module.exports = router;

@@ -67,6 +67,8 @@ const projectSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
   thumbnailImage: { type: String },
+  thumbnailImages: [{ type: String }],
+  images: [{ type: String }],
   username: { type: String, required: true },
   projectId: {
     type: mongoose.Schema.Types.ObjectId,

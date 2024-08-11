@@ -6,6 +6,8 @@ const errorHandler = require("./midleware/errorhandler");
 const connectDb = require("./config/dbConnection");
 const cors = require("cors");
 const projectRoutes = require('./routes/projectRoutes');
+const commentRouter = require('./routes/commentRoutes');
+const likeRouter = require('./routes/likeRoutes');
 
 connectDb();
 
@@ -23,6 +25,8 @@ const port = process.env.PORT || 5000;
 app.use("/api/contacts", contactsRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/comments', commentRouter);
+app.use('/api/like', likeRouter);
 app.use(errorHandler);
 
 app.listen(port, () => {

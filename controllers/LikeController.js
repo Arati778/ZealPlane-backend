@@ -35,21 +35,35 @@ const addLike = asyncHandler(async (req, res) => {
     throw new Error('Like already exists');
   }
 
+  // Create and save the new like
   const like = new Like({
     userId,
     likerId,
     projectId,
   });
 
-  const createdLike = await like.save();
-  res.status(201).json(createdLike);
+  // const createdLike = await like.save();
+
+  // // Increment the like count in the project model
+  // projectExists.likeCount = projectExists.likeCount + 1;
+  // await projectExists.save();
+
+  res.status(201).json({
+    message: 'Like added successfully',
+    // createdLike,
+    // likeCount: projectExists.likeCount
+  });
 });
 
 // Get all likes for a project
 const getLikesByProjectId = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
 
-  const likes = await Like.find({ projectId }).populate('userId likerId', 'username'); // Populate userId and likerId with username
+  // Find likes for the given project
+  const likes = await Like.find({ projectId })
+    .populate('userId', 'username') // Populate userId with username
+    .populate('likerId', 'username'); // Populate likerId with username
+
   res.json(likes);
 });
 
@@ -57,11 +71,19 @@ const getLikesByProjectId = asyncHandler(async (req, res) => {
 const removeLike = asyncHandler(async (req, res) => {
   const { likeId } = req.params;
 
+  // Find the like by ID
   const like = await Like.findById(likeId);
 
   if (like) {
+    // Decrement the like count in the project model
+    const project = await Project.findById(like.projectId);
+    if (project) {
+      project.likeCount = project.likeCount > 0 ? project.likeCount - 1 : 0;
+      await project.save();
+    }
+
     await like.remove();
-    res.json({ message: 'Like removed' });
+    res.json({ message: 'Like removed', likeCount: project.likeCount });
   } else {
     res.status(404);
     throw new Error('Like not found');
