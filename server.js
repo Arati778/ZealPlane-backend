@@ -27,6 +27,7 @@ app.use("/api/users", userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/comments', commentRouter);
 app.use('/api/like', likeRouter);
+app.use('/api/posts', require('./routes/postRoutes'));
 app.use(errorHandler);
 
 app.listen(port, () => {

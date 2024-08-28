@@ -6,17 +6,21 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  googleLoginUser, // New controller function for Google login
 } = require("./controllers/userController");
 const upload = require("./midleware/upload"); // Import the configured multer instance
 const ValidateToken = require("./midleware/validateTokenHandler");
 
 const router = express.Router();
 
-// Register route   
+// Register route
 router.post("/register", registerUser);
 
 // Login route
 router.post("/login", loginUser);
+
+// Google Login route
+router.post("/google-login", googleLoginUser); // New route for Google login
 
 // Get current user route
 router.get("/me", ValidateToken, currentUser);
