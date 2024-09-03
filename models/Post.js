@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const PostSchema = new mongoose.Schema({
   title: { type: String, required: true },
   body: { type: String, required: true },
-  subreddit: { type: String, required: true },
-  author: { type: String, required: true },
+  subreddit: { type: String },
+  author: { type: String },
   timestamp: { type: Date, default: Date.now },
   votes: { type: Number, default: 0 },
   comments: [

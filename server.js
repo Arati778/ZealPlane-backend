@@ -8,6 +8,7 @@ const cors = require("cors");
 const projectRoutes = require('./routes/projectRoutes');
 const commentRouter = require('./routes/commentRoutes');
 const likeRouter = require('./routes/likeRoutes');
+const forumPost = require('./routes/postRoutes');
 
 connectDb();
 
@@ -27,7 +28,7 @@ app.use("/api/users", userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/comments', commentRouter);
 app.use('/api/like', likeRouter);
-app.use('/api/posts', require('./routes/postRoutes'));
+app.use('/api/posts', forumPost);
 app.use(errorHandler);
 
 app.listen(port, () => {

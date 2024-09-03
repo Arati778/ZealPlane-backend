@@ -22,25 +22,32 @@ exports.getPostById = async (req, res) => {
   }
 };
 
+
 // Create a new post
 exports.createPost = async (req, res) => {
   const { title, body, subreddit, author, image } = req.body;
 
   try {
+    // Create a new Post object
     const newPost = new Post({
       title,
       body,
       subreddit,
       author,
       image,
+      // `timestamp` and `votes` will use default values if not provided
+      comments: [], // Initialize with an empty array
     });
 
+    // Save the post to the database
     const post = await newPost.save();
     res.json(post);
   } catch (err) {
-    res.status(500).send('Server Error');
+    console.error('Error creating post:', err.message); // Log detailed error message
+    res.status(500).send(`Server Error: ${err.message}`);
   }
 };
+
 
 // Update post votes (upvote/downvote)
 exports.updateVotes = async (req, res) => {
