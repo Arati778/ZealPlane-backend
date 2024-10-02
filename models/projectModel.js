@@ -1,91 +1,37 @@
-// const mongoose = require("mongoose");
-
-// const projectSchema = new mongoose.Schema(
-//   {
-//     title: {
-//       type: String,
-//       default: true,
-//     },
-//     projectDescription: {
-//       type: String,
-//       default: true,
-//     },
-    // projectId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   default: mongoose.Types.ObjectId,
-    //   unique: true,
-//     },
-//     id: {
-//       type: Number,
-//       unique: true,
-//     },
-//       tags: {
-//         type: [String],
-//         default: [],
-//       },
-//       subTags: {
-//         type: [String],
-//         default: [],
-//       },
-//       websiteLink: {
-//         type: String,
-//         default: null,
-//       },
-//       username: {
-//         type: String,
-//         required: true,
-//       },
-//       publisher: {
-//         type: String,
-//         default: null,
-//       },
-//       teammates: {
-//         type: [String],
-//         default: [],
-//       },
-//       thumbnail: {
-//           type: String,
-//           default: true,
-//       },
-//       ratings: {
-//         type: Number,
-//         default: 0,
-//       },
-//       feedback: {
-//         type: [String],
-//         default: [],
-//       },
-//   },
-//   {
-//     timestamps: true,
-//   }
-// );
-
 const mongoose = require('mongoose');
 
-const projectSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  thumbnailImage: { type: String },
-  thumbnailImages: [{ type: String }],
-  images: [{ type: String }],
+const commentSchema = new mongoose.Schema({
   username: { type: String, required: true },
-  projectId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: mongoose.Types.ObjectId,
-    unique: true,
-  },
-  id: {
-    type: Number, 
-    required: true,
-  },
-  tags: [{ type: String }],
-  subtags: [{ type: String }],
-  publisher: { type: String },
-  teammates: [{ type: String }],
-  ratings: { type: Number, min: 0, max: 5 }
+  body: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },  // Automatically adds timestamp when comment is created
 });
 
+const projectSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    thumbnailImage: { type: String },
+    thumbnailImages: [{ type: String }],
+    images: [{ type: String }],
+    username: { type: String, required: true }, // Project creator's username
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId(),
+      unique: true,
+    },
+    id: { type: Number, required: true }, // Consider if this is necessary; it should be unique if so
+    tags: [{ type: String }],
+    subtags: [{ type: String }],
+    publisher: { type: String },
+    teammates: [{ type: String }],
+    ratings: { type: Number, min: 0, max: 5 },
+    comments: [commentSchema], // Array of comments for the project
+    likes: { type: Number, default: 0 }, // Number of likes for the project
+    likedBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
+  },
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
+  }
+);
+
 module.exports = mongoose.model('Project', projectSchema);
-
-

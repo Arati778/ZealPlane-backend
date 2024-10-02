@@ -1,4 +1,3 @@
-// controllers/postController.js
 const Post = require('../models/Post');
 
 // Get all posts
@@ -21,7 +20,6 @@ exports.getPostById = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
-
 
 // Create a new post
 exports.createPost = async (req, res) => {
@@ -48,6 +46,40 @@ exports.createPost = async (req, res) => {
   }
 };
 
+// Update a post by ID (CRUD update operation)
+exports.updatePost = async (req, res) => {
+  const { title, body, subreddit, image } = req.body;
+
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    // Update fields if they exist in the request body
+    if (title) post.title = title;
+    if (body) post.body = body;
+    if (subreddit) post.subreddit = subreddit;
+    if (image) post.image = image;
+
+    // Save updated post
+    const updatedPost = await post.save();
+    res.json(updatedPost);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+// Delete a post by ID (CRUD delete operation)
+exports.deletePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    await post.remove(); // Delete post
+    res.json({ msg: 'Post removed' });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
 
 // Update post votes (upvote/downvote)
 exports.updateVotes = async (req, res) => {
@@ -55,9 +87,12 @@ exports.updateVotes = async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Post not found' });
 
+    // Update the votes count
     post.votes = req.body.votes;
     await post.save();
-    res.json(post);
+
+    // Return the updated votes count
+    res.json({ votes: post.votes });
   } catch (err) {
     res.status(500).send('Server Error');
   }
@@ -73,7 +108,46 @@ exports.addComment = async (req, res) => {
 
     post.comments.push({ body });
     await post.save();
-    res.json(post.comments);
+    res.json(post.comments); // Return updated comments
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+// Update a comment (CRUD update operation)
+exports.updateComment = async (req, res) => {
+  const { commentId, body } = req.body;
+
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    // Find the comment in the post
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ msg: 'Comment not found' });
+
+    comment.body = body; // Update comment body
+    await post.save();
+
+    res.json(post.comments); // Return updated comments
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+// Delete a comment from a post (CRUD delete operation)
+exports.deleteComment = async (req, res) => {
+  const { commentId } = req.params;
+
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    // Remove the comment from the array
+    post.comments = post.comments.filter((comment) => comment._id != commentId);
+    await post.save();
+
+    res.json(post.comments); // Return updated comments
   } catch (err) {
     res.status(500).send('Server Error');
   }

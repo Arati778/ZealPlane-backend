@@ -1,307 +1,30 @@
-// const express = require("express");
-// const asyncHandler = require("express-async-handler");
-// const Project = require("../models/projectModel");
 
-// // // // Create a new project
-// // // const createProject = asyncHandler(async (req, res) => {
-// // //   const {
-// // //     title,
-// // //     projectDescription,
-// // //     // tags,
-// // //     // subTags,
-// // //     websiteLink,
-// // //     publisher,
-// // //     // teammates,
-// // //     // images,
-// // //     likes,
-// // //     // wishlist,
-// // //     // enquired,
-// // //     ratings,
-// // //     // feedback,
-// // //     id,
-// // //     username
-// // //   } = req.body;
-
-// // //   // Validate that id and username are provided
-// // //   if (!id || !username) {
-// // //     res.status(400);
-// // //     throw new Error('User ID and username are required');
-// // //   }
-
-// // //   // Validate that id and username are of correct type (assuming id should be a number and username a string)
-// // //   if (typeof id !== 'number' || typeof username !== 'string') {
-// // //     res.status(400);
-// // //     throw new Error('Invalid data types for User ID and/or username');
-// // //   }
-
-// // //   const project = new Project({
-// // //     title,
-// // //     projectDescription,
-// // //     projectId: new mongoose.Types.ObjectId(), // Automatically generates a new ObjectId
-// // //     id,
-// // //     username,
-// // //     // tags: tags || [],
-// // //     // subTags: subTags || [],
-// // //     websiteLink: websiteLink || null,
-// // //     publisher: publisher || null,
-// // //     // teammates: teammates || [],
-// // //     // images: images || [],
-// // //     likes: likes || 0,
-// // //     // wishlist: wishlist || [],
-// // //     // enquired: enquired || [],
-// // //     ratings: ratings || 0,
-// // //     // feedback: feedback || [],
-// // //   });
-
-// // //   const createdProject = await project.save();
-// // //   res.status(201).json(createdProject);
-// // // });
-
-// // // // Get all projects based on timestamp (for home page)
-// // // const getAllProjects = asyncHandler(async (req, res) => {
-// // //   const projects = await Project.find({}).sort({ createdAt: -1 });
-// // //   res.json(projects);
-// // // });
-
-// // // // Get project by ID
-// // // const getProjectById = asyncHandler(async (req, res) => {
-// // //   const project = await Project.findById(req.params.id);
-
-// // //   if (project) {
-// // //     res.json(project);
-// // //   } else {
-// // //     res.status(404);
-// // //     throw new Error("Project not found");
-// // //   }
-// // // });
-
-// // // // Get all projects with pagination and filter by user ID
-// // // const getProjectsPaginated = asyncHandler(async (req, res) => {
-// // //   const { page = 1, limit = 5, userId } = req.query;
-
-// // //   // Create a query object to filter by _id if provided
-// // //   const query = userId ? { id: userId } : {};
-
-// // //   const projects = await Project.find(query)
-// // //     .sort({ createdAt: -1 })
-// // //     .skip((page - 1) * limit)
-// // //     .limit(Number(limit));
-
-// // //   const totalProjects = await Project.countDocuments(query);
-// // //   const totalPages = Math.ceil(totalProjects / limit);
-
-// // //   res.json({
-// // //     projects,
-// // //     currentPage: Number(page),
-// // //     totalPages,
-// // //   });
-// // // });
-
-// // // // Update project by ID
-// // // const updateProject = asyncHandler(async (req, res) => {
-// // //   const {
-// // //     title,
-// // //     projectDescription,
-// // //     tags,
-// // //     subTags,
-// // //     websiteLink,
-// // //     publisher,
-// // //     teammates,
-// // //     images,
-// // //     likes,
-// // //     wishlist,
-// // //     enquired,
-// // //     ratings,
-// // //     feedback,
-// // //   } = req.body;
-
-// // //   const project = await Project.findById(req.params.id);
-
-// // //   if (project) {
-// // //     project.title = title || project.title;
-// // //     project.projectDescription =
-// // //       projectDescription || project.projectDescription;
-// // //     project.tags = tags || project.tags;
-// // //     project.subTags = subTags || project.subTags;
-// // //     project.websiteLink = websiteLink || project.websiteLink;
-// // //     project.publisher = publisher || project.publisher;
-// // //     project.teammates = teammates || project.teammates;
-// // //     project.images = images || project.images;
-// // //     project.likes = likes !== undefined ? likes : project.likes;
-// // //     project.wishlist = wishlist || project.wishlist;
-// // //     project.enquired = enquired || project.enquired;
-// // //     project.ratings = ratings !== undefined ? ratings : project.ratings;
-// // //     project.feedback = feedback || project.feedback;
-
-// // //     const updatedProject = await project.save();
-// // //     res.json(updatedProject);
-// // //   } else {
-// // //     res.status(404);
-// // //     throw new Error("Project not found");
-// // //   }
-// // // });
-
-// // // // Delete project by ID
-// // // const deleteProject = asyncHandler(async (req, res) => {
-// // //   const project = await Project.findById(req.params.id);
-
-// // //   if (project) {
-// // //     await project.remove();
-// // //     res.json({ message: "Project removed" });
-// // //   } else {
-// // //     res.status(404);
-// // //     throw new Error("Project not found");
-// // //   }
-// // // });
-
-// // // module.exports = {
-// // //   createProject,
-// // //   getAllProjects,
-// // //   getProjectById,
-// // //   getProjectsPaginated,
-// // //   updateProject,
-// // //   deleteProject,
-// // // };
-
-// // const asyncHandler = require("express-async-handler");
-// // const mongoose = require("mongoose");
-// // const Project = require("../models/projectModel");
-
-// // // Create a new project
-// // const createProject = asyncHandler(async (req, res) => {
-// //   const {
-// //     title,
-// //     projectDescription,
-// //     tags,
-// //     subTags,
-// //     websiteLink,
-// //     publisher,
-// //     teammates,
-// //     ratings,
-// //     feedback,
-// //     id,
-// //     username
-// //   } = req.body;
-
-// //   // Create a new project object
-// //   const project = new Project({
-// //     title,
-// //     projectDescription,
-// //     projectId: new mongoose.Types.ObjectId(), // Automatically generates a new ObjectId
-// //     id,
-// //     username,
-// //     tags: tags || [],
-// //     subTags: subTags || [],
-// //     websiteLink: websiteLink || null,
-// //     publisher: publisher || null,
-// //     teammates: teammates || [],
-// //     ratings: ratings || 0,
-// //     feedback: feedback || [],
-// //   });
-
-// //   // Check if a file was uploaded and set the thumbnail URL
-// //   if (req.file) {
-// //     project.thumbnail = req.file.path;
-// //   }
-
-// //   // Save the project to the database
-// //   const createdProject = await project.save();
-// //   res.status(201).json(createdProject);
-// // });
-
-// // // Get all projects based on timestamp (for home page)
-// // const getAllProjects = asyncHandler(async (req, res) => {
-// //   const projects = await Project.find({}).sort({ createdAt: -1 });
-// //   res.json(projects);
-// // });
-
-// // // Get project by ID
-// // const getProjectById = asyncHandler(async (req, res) => {
-// //   const project = await Project.findById(req.params.id);
-
-// //   if (project) {
-// //     res.json(project);
-// //   } else {
-// //     res.status(404);
-// //     throw new Error("Project not found");
-// //   }
-// // });
-
-// // // Get all projects with pagination and filter by user ID
-// // const getProjectsPaginated = asyncHandler(async (req, res) => {
-// //   const { page = 1, limit = 5, userId } = req.query;
-
-// //   // Create a query object to filter by userId if provided
-// //   const query = userId ? { id: userId } : {};
-
-// //   const projects = await Project.find(query)
-// //     .sort({ createdAt: -1 })
-// //     .skip((page - 1) * limit)
-// //     .limit(Number(limit));
-
-// //   const totalProjects = await Project.countDocuments(query);
-// //   const totalPages = Math.ceil(totalProjects / limit);
-
-// //   res.json({
-// //     projects,
-// //     currentPage: Number(page),
-// //     totalPages,
-// //   });
-// // });
-
-// // // Update project by ID
-// // const updateProject = asyncHandler(async (req, res) => {
-// //   const { title, projectDescription } = req.body;
-
-// //   const project = await Project.findById(req.params.id);
-
-// //   if (project) {
-// //     project.title = title || project.title;
-// //     project.projectDescription =
-// //       projectDescription || project.projectDescription;
-
-// //     const updatedProject = await project.save();
-// //     res.json(updatedProject);
-// //   } else {
-// //     res.status(404);
-// //     throw new Error("Project not found");
-// //   }
-// // });
-
-// // // Delete project by ID
-// // const deleteProject = asyncHandler(async (req, res) => {
-// //   const project = await Project.findById(req.params.id);
-
-// //   if (project) {
-// //     await project.remove();
-// //     res.json({ message: "Project removed" });
-// //   } else {
-// //     res.status(404);
-// //     throw new Error("Project not found");
-// //   }
-// // });
-
-// // module.exports = {
-// //   createProject,
-// //   getAllProjects,
-// //   getProjectById,
-// //   getProjectsPaginated,
-// //   updateProject,
-// //   deleteProject,
-// // };
 const asyncHandler = require('express-async-handler');
 const mongoose = require('mongoose');
 const Project = require('../models/projectModel');
+const Notification = require('../models/notificationModel');
+const User = require('../models/userModel');
 
-// Get all projects
+
 const getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.find();
+    // Find projects where thumbnailImage is not null or an empty string, and thumbnailImages array is not null or empty
+    const projects = await Project.find({
+      thumbnailImage: { $ne: null, $ne: "" },  // Ensure thumbnailImage is neither null nor empty
+      $and: [
+        { thumbnailImages: { $ne: null } },    // Ensure thumbnailImages is not null
+        { thumbnailImages: { $not: { $size: 0 } } } // Ensure thumbnailImages is not an empty array
+      ]
+    });
+    
     res.json(projects);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
 
 // Get a project by projectId
 const getProjectById = async (req, res) => {
@@ -415,8 +138,6 @@ const addThumbnailImage = async (req, res) => {
 };
 
 
-
-
 const updateProject = async (req, res) => {
   const {
     name,
@@ -459,6 +180,144 @@ const updateProject = async (req, res) => {
   }
 };
 
+const addComment = async (req, res) => {
+  const { username, body } = req.body;
+
+  if (!body) {
+    return res.status(400).json({ message: 'Comment body is required' });
+  }
+
+  try {
+    const project = await Project.findOne({ projectId: req.params.projectId });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    const projectOwner = await User.findById(project.userId); // Fetch the project owner
+
+    // Create a new comment with a timestamp
+    const newComment = {
+      username,
+      body,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // Add the comment to the project's comments array
+    project.comments.push(newComment);
+
+    // Save the updated project
+    await project.save();
+
+    // Create a notification for the project owner if someone comments on their project
+    if (req.user.id !== projectOwner._id.toString()) {
+      const notificationMessage = `${username} commented on your project "${project.name}"`;
+
+      const notification = new Notification({
+        recipient: projectOwner._id, // Notify the project owner
+        sender: req.user.id,         // User who added the comment
+        message: notificationMessage,
+        projectId: project._id,
+      });
+      await notification.save();
+    }
+
+    return res.status(201).json(newComment); // Return the newly added comment
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update a comment in a project
+const updateComment = async (req, res) => {
+  const { commentId, body } = req.body;
+  try {
+    const project = await Project.findOne({ projectId: req.params.projectId });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Find the comment to update
+    const comment = project.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    comment.body = body;
+    const updatedProject = await project.save();
+    res.json(updatedProject);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Delete a comment from a project
+const deleteComment = async (req, res) => {
+  const { commentId } = req.body;
+  try {
+    const project = await Project.findOne({ projectId: req.params.projectId });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Remove the comment
+    project.comments.id(commentId).remove();
+    const updatedProject = await project.save();
+    res.json(updatedProject);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+const likeProject = async (req, res) => {
+  try {
+    const project = await Project.findOne({ projectId: req.params.projectId }).populate('likedBy', 'username'); // Populate 'likedBy' with user data
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Ensure likedBy is initialized as an array
+    if (!project.likedBy) {
+      project.likedBy = [];
+    }
+
+    const userId = req.user.id; // Assuming req.user contains the user ID after authentication
+
+    // Check if the user has already liked the project
+    const userIndex = project.likedBy.findIndex(user => user._id.toString() === userId);
+
+    if (userIndex === -1) {
+      // User has not liked the project yet, so like it
+      project.likes += 1;
+      project.likedBy.push(userId); // Add user to likedBy array
+    } else {
+      // User has already liked the project, so unlike it
+      project.likes -= 1;
+      project.likedBy.splice(userIndex, 1); // Remove user from likedBy array
+    }
+
+    // Save the updated project
+    const updatedProject = await project.save();
+
+    // Re-populate likedBy to include user details
+    const populatedProject = await Project.findById(updatedProject._id).populate('likedBy', 'username');
+
+    // Emit the updated project data via Socket.io
+    req.io.emit('projectLiked', {
+      projectId: populatedProject.projectId,
+      likes: populatedProject.likes,
+      likedBy: populatedProject.likedBy,
+    });
+
+    res.json(populatedProject);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
 
 module.exports = {
   getAllProjects,
@@ -466,5 +325,9 @@ module.exports = {
   getProjectsByUsername,
   createProject,
   updateProject,
+  addComment,
+  updateComment,
+  deleteComment,
+  likeProject,
   addThumbnailImage
 };

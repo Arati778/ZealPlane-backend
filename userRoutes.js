@@ -30,7 +30,7 @@ router.get("/:id", getUserById);
 
 // Update user (with profilePic upload)
 // Ensure token is validated before handling file upload
-router.put("/:id", upload.single("profilePic"), ValidateToken, updateUser);
+router.put("/:id", upload.single("profilePic"),  updateUser);
 
 // Delete user
 router.delete("/:id", ValidateToken, deleteUser);

@@ -1,30 +1,12 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ['like', 'comment', 'enquiry'], // Example notification types, customize as needed
-    required: true,
-  },
-  entityId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-  },
-  message: {
-    type: String,
-    required: true,
-  },
-  read: {
-    type: Boolean,
-    default: false,
-  },
-}, {
-  timestamps: true,
+  recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // The user receiving the notification
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },   // The user who triggered the notification
+  message: { type: String, required: true },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },  // The related project
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Notification = mongoose.model('Notification', notificationSchema);

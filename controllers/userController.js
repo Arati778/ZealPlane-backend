@@ -5,7 +5,6 @@ const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
-// Register User
 const registerUser = asynchandler(async (req, res) => {
   const {
     username,
@@ -25,25 +24,38 @@ const registerUser = asynchandler(async (req, res) => {
 
   console.log("Register User Request Body:", req.body);
 
+  // Check for required fields
   if (!username || !email || !password) {
     res.status(400);
     console.log("Missing required fields");
-    throw new Error("All fields are mandatory!");
+    throw new Error("Username, email, and password are mandatory!");
   }
 
+  // Check if the username already exists
+  const usernameExists = await User.findOne({ username });
+  if (usernameExists) {
+    res.status(400);
+    console.log("Username already exists:", usernameExists);
+    throw new Error("Username already taken!");
+  }
+
+  // Check if the email is already registered
   const userAvailable = await User.findOne({ email });
   if (userAvailable) {
     res.status(400);
     console.log("User already registered:", userAvailable);
-    throw new Error("User already registered!");
+    throw new Error("User with this email already registered!");
   }
 
+  // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
   console.log("Hashed Password:", hashedPassword);
 
-  const uniqueId = uuidv4(); // Generate a UUID for the uniqueId
+  // Generate a unique ID and set user status
+  const uniqueId = uuidv4();
   const status = `Active-${uniqueId}`; // Example status format
 
+  // Create a new user
   const user = await User.create({
     username,
     email,
@@ -64,6 +76,7 @@ const registerUser = asynchandler(async (req, res) => {
 
   console.log(`User created: ${user}`);
 
+  // Send response
   if (user) {
     res.status(201).json({
       _id: user.id,
@@ -77,6 +90,7 @@ const registerUser = asynchandler(async (req, res) => {
     throw new Error("User data is not valid");
   }
 });
+
 
 // Google Login
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
