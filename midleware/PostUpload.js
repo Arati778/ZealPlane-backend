@@ -13,11 +13,12 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "profile_pics",
-    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    folder: "post_image",
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'],
+    resource_type: 'image',  
   },
 });
 
-const upload = multer({ storage: storage });
+const uploadPost = multer({ storage: storage });
 
-module.exports = upload;
+module.exports = uploadPost;

@@ -1,19 +1,54 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const commentSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  body: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },  // Automatically adds timestamp when comment is created
+  commentText: {
+    type: String,
+  },
+  profilePic: {
+    type: String,
+  },
+  username: {
+    type: String,
+  },
+  uniqueId: {
+    // Added to track the user who made the comment
+    type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now, // Automatically set to the current date
+  },
+});
+
+const ratingSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  uniqueId: {
+    // Added to uniquely identify the user who made the rating
+    type: String,
+    required: true,
+  },
+  ratingValue: { type: Number, required: true }, // Rating (1-5 stars)
+  date: { type: Date, default: Date.now },
 });
 
 const projectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    profilePic: { type: String },
     description: { type: String, required: true },
     thumbnailImage: { type: String },
     thumbnailImages: [{ type: String }],
     images: [{ type: String }],
     username: { type: String, required: true }, // Project creator's username
+    uniqueId: {
+      // Added to associate the project with a specific user
+      type: String,
+    },
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       default: () => new mongoose.Types.ObjectId(),
@@ -24,14 +59,17 @@ const projectSchema = new mongoose.Schema(
     subtags: [{ type: String }],
     publisher: { type: String },
     teammates: [{ type: String }],
-    ratings: { type: Number, min: 0, max: 5 },
+    ratings: [ratingSchema],
     comments: [commentSchema], // Array of comments for the project
     likes: { type: Number, default: 0 }, // Number of likes for the project
-    likedBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
+    likedBy: {
+      type: [{ uniqueId: String }], // Added uniqueId for users who liked the project
+      default: [],
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
   }
 );
 
-module.exports = mongoose.model('Project', projectSchema);
+module.exports = mongoose.model("Project", projectSchema);

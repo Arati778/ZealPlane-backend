@@ -1,20 +1,33 @@
-const express = require('express');
+// In your routes file (e.g., routes/posts.js)
+const express = require("express");
 const router = express.Router();
-const postController = require('../controllers/postController');
+const postController = require("../controllers/postController");
+const ValidateToken = require("../midleware/validateTokenHandler");
+const postUpload = require("../midleware/PostUpload");
 
-// Routes for posts
-router.get('/', postController.getPosts);               // Get all posts
-router.get('/:id', postController.getPostById);         // Get a single post by ID
-router.post('/', postController.createPost);            // Create a new post
-router.put('/:id', postController.updatePost);          // Update an existing post by ID
-router.delete('/:id', postController.deletePost);       // Delete a post by ID
+// Existing routes
+router.get("/", postController.getPosts);
+router.get("/:id", ValidateToken, postController.getPostById);
+router.post(
+  "/",
+  postUpload.single("post_image"),
+  ValidateToken,
+  postController.createPost
+);
+router.put("/:id", postController.updatePost);
+router.delete("/:id", postController.deletePost);
+router.put("/votes/:id", ValidateToken, postController.updateVotes);
+router.get("/user/:username", postController.getPostsByAuthor);
 
-// Route for updating post votes (upvote/downvote)
-router.put('/:id/votes', postController.updateVotes);   // Update votes for a post
-
-// Routes for comments
-router.post('/:id/comments', postController.addComment);               // Add a comment to a post
-router.put('/:id/comments/:commentId', postController.updateComment);   // Update a specific comment by ID
-router.delete('/:id/comments/:commentId', postController.deleteComment); // Delete a specific comment by ID
+// Comment routes
+router.post("/:id/comments", ValidateToken, postController.addComment);
+router.put("/:id/comments", ValidateToken, postController.updateComment);
+router.delete(
+  "/:id/comments/:commentId",
+  ValidateToken,
+  postController.deleteComment
+);
+// Get posts by community
+router.get("/community/:communityId", postController.getPostsByCommunity);
 
 module.exports = router;

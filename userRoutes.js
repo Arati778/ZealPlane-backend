@@ -6,7 +6,9 @@ const {
   getUserById,
   updateUser,
   deleteUser,
-  googleLoginUser, // New controller function for Google login
+  searchUsers,
+  googleLoginUser,
+  getUserByUsername, // New controller function for Google login
 } = require("./controllers/userController");
 const upload = require("./midleware/upload"); // Import the configured multer instance
 const ValidateToken = require("./midleware/validateTokenHandler");
@@ -26,13 +28,16 @@ router.post("/google-login", googleLoginUser); // New route for Google login
 router.get("/me", ValidateToken, currentUser);
 
 // Get user by ID
-router.get("/:id", getUserById);
+router.get("/:id", ValidateToken, getUserById);
 
 // Update user (with profilePic upload)
 // Ensure token is validated before handling file upload
-router.put("/:id", upload.single("profilePic"),  updateUser);
+router.put("/:id", upload.single("profilePic"), ValidateToken, updateUser);
 
 // Delete user
 router.delete("/:id", ValidateToken, deleteUser);
+
+// Get user by username (useful for search functionality)
+router.get("/username/:username", getUserByUsername);
 
 module.exports = router;

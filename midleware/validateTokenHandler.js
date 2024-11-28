@@ -3,26 +3,30 @@ const jwt = require("jsonwebtoken");
 
 const ValidateToken = asyncHandler(async (req, res, next) => {
   let token;
-  let authHeader = req.headers.authorization || req.headers.Authorization; // Check both lowercase and uppercase headers
+  let authHeader = req.headers.authorization || req.headers.Authorization;
 
   if (authHeader && authHeader.startsWith("Bearer")) {
-    token = authHeader.split(" ")[1]; // Extract the token from "Bearer <token>"
+    token = authHeader.split(" ")[1]; // Extract the token
 
-    // Verify the token
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if (err) {
-        res.status(401); // Change to 401 (Unauthorized)
-        throw new Error("Invalid token. User is not authorized!");
+    try {
+      // Verify the access token
+      const decoded = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      req.user = decoded; // Attach decoded user info to request
+      next(); // Proceed with the request
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        // Token expired, send a 401 response
+        res.status(401);
+        throw new Error("Access token expired. Please refresh the token.");
+      } else {
+        res.status(401);
+        throw new Error("Invalid token.");
       }
-
-      // Attach decoded user information to the request
-      req.user = decoded;
-      next(); // Move to the next middleware or route handler
-    });
+    }
   } else {
-    // If no token is present or it's invalid
+    // If no token is provided
     res.status(401);
-    throw new Error("User not authorized, no token provided");
+    throw new Error("No token provided.");
   }
 });
 

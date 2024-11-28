@@ -7,10 +7,11 @@ const {
   createProject,
   updateProject,
   addThumbnailImage,
-  addComment,         // Add missing functions
-  updateComment,      // Add missing functions
-  deleteComment,      // Add missing functions
-  likeProject
+  getCommentById,
+  updateComment, // Add missing functions
+  deleteComment, // Add missing functions
+  likeProject,
+  commentOnProject,
 } = require("../controllers/projectController");
 const ValidateToken = require("../midleware/validateTokenHandler");
 
@@ -21,7 +22,7 @@ const projectUpload = require("../midleware/projectUpload");
 router.get("/", getAllProjects);
 
 // Route to get project by projectId
-router.get("/id/:projectId", getProjectById);
+router.get("/id/:projectId", ValidateToken, getProjectById);
 
 // Route to get projects by username
 router.get("/username/:username", getProjectsByUsername);
@@ -30,19 +31,25 @@ router.get("/username/:username", getProjectsByUsername);
 router.post("/", projectUpload.singleThumbnail, createProject);
 
 // Route to update project by projectId
-router.put("/id/:projectId", [projectUpload.singleThumbnail, projectUpload.multipleImages], updateProject);
+router.put(
+  "/id/:projectId",
+  [projectUpload.singleThumbnail, projectUpload.multipleImages],
+  updateProject
+);
 
 router.post("/id/:projectId", projectUpload.singleThumbnail, addThumbnailImage);
 
-router.post('/:projectId', addComment); // This will map to /api/comments/:projectId
+router.post("/:projectId", ValidateToken, commentOnProject); // This will map to /api/comments/:projectId
 
 // Update a comment in a project
-router.put('/:projectId/:commentId', updateComment); // This will map to /api/comments/:projectId/:commentId
+router.put("/:projectId/comments/:commentId", ValidateToken, updateComment);
 
 // Delete a comment from a project
-router.delete('/:projectId/:commentId', deleteComment); // This will map to /api/comments/:projectId/:commentId
+router.delete("/:projectId/:commentId", deleteComment); // This will map to /api/comments/:projectId/:commentId
 
 // Like/Unlike routes
-router.post('/:projectId/like', ValidateToken, likeProject);
+router.post("/:projectId/like", ValidateToken, likeProject);
+
+router.get("/:projectId/:commentId", getCommentById);
 
 module.exports = router;

@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    refreshToken: { type: String }, // Store refresh token here
     level: {
       type: String,
       default: null,
@@ -91,6 +92,12 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+
+// Create a unique index on the 'username' field
+userSchema.index({ username: 1 }, { unique: true });
+
+
 
 // Custom validation for the schema (Optional, additional check)
 userSchema.pre("validate", function (next) {
