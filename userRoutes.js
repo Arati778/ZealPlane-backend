@@ -38,6 +38,6 @@ router.put("/:id", upload.single("profilePic"), ValidateToken, updateUser);
 router.delete("/:id", ValidateToken, deleteUser);
 
 // Get user by username (useful for search functionality)
-router.get("/username/:username", getUserByUsername);
+router.get("/username/:username", ValidateToken, getUserByUsername);
 
 module.exports = router;

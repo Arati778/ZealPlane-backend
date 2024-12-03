@@ -131,6 +131,7 @@ const createProject = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 const addThumbnailImage = async (req, res) => {
   try {
     const { projectId } = req.body;
@@ -208,6 +209,43 @@ const updateProject = async (req, res) => {
     res.json(updatedProject);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+};
+
+const deleteProject = async (req, res) => {
+  try {
+    const { projectId } = req.params; // Get projectId from the request params
+
+    // Ensure the projectId is provided
+    if (!projectId) {
+      return res.status(400).json({ message: "Project ID is required" });
+    }
+
+    // Find the project by its projectId
+    const project = await Project.findOne({ projectId });
+
+    // If the project doesn't exist, return a 404 response
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Optionally, you can add authorization checks here, like checking if the user is the project owner
+    const uniqueIdFromToken = req.user.uniqueId;
+    if (uniqueIdFromToken !== project.uniqueId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete this project" });
+    }
+
+    // Delete the project
+    await Project.deleteOne({ projectId });
+
+    // Return a success response
+    return res.status(200).json({ message: "Project deleted successfully" });
+  } catch (err) {
+    // Handle any errors during the deletion process
+    console.error(err);
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -444,4 +482,5 @@ module.exports = {
   likeProject,
   addThumbnailImage,
   getCommentById,
+  deleteProject,
 };

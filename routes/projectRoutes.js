@@ -12,6 +12,7 @@ const {
   deleteComment, // Add missing functions
   likeProject,
   commentOnProject,
+  deleteProject,
 } = require("../controllers/projectController");
 const ValidateToken = require("../midleware/validateTokenHandler");
 
@@ -36,6 +37,8 @@ router.put(
   [projectUpload.singleThumbnail, projectUpload.multipleImages],
   updateProject
 );
+
+router.delete("/id/:projectId", ValidateToken, deleteProject);
 
 router.post("/id/:projectId", projectUpload.singleThumbnail, addThumbnailImage);
 

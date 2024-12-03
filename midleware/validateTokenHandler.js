@@ -14,7 +14,8 @@ const ValidateToken = asyncHandler(async (req, res, next) => {
       req.user = decoded; // Attach decoded user info to request
       next(); // Proceed with the request
     } catch (err) {
-      if (err.name === "TokenExpiredError") {
+      if (err.name === "TokenExpiredError") 
+        {
         // Token expired, send a 401 response
         res.status(401);
         throw new Error("Access token expired. Please refresh the token.");

@@ -17,14 +17,22 @@ router.post(
 router.put("/:id", postController.updatePost);
 router.delete("/:id", postController.deletePost);
 router.put("/votes/:id", ValidateToken, postController.updateVotes);
+// Route to check if the user has voted
+router.get("/:id/vote", ValidateToken, postController.getUserVote);
+
 router.get("/user/:username", postController.getPostsByAuthor);
 
 // Comment routes
 router.post("/:id/comments", ValidateToken, postController.addComment);
-router.put("/:id/comments", ValidateToken, postController.updateComment);
+router.put(
+  "/:id/comments/:commentId",
+  ValidateToken,
+  postController.updateComment
+);
 router.delete(
   "/:id/comments/:commentId",
   ValidateToken,
+
   postController.deleteComment
 );
 // Get posts by community

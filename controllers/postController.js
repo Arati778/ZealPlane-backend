@@ -208,6 +208,35 @@ exports.updateVotes = async (req, res) => {
   }
 };
 
+exports.getUserVote = async (req, res) => {
+  if (!req.user || !req.user.uniqueId) {
+    return res.status(400).json({ msg: "User ID is missing" });
+  }
+
+  const uniqueId = req.user.uniqueId; // Fetch user ID from the token
+
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: "Post not found" });
+
+    // Check if the user has voted
+    const userVote = post.votes.find((vote) => vote.uniqueId === uniqueId);
+
+    if (!userVote) {
+      return res.json({ hasVoted: false, voteValue: null });
+    }
+
+    res.json({
+      hasVoted: true,
+      voteValue: userVote.voteValue,
+      timestamp: userVote.timestamp,
+    });
+  } catch (err) {
+    console.error("Error checking user vote:", err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
 // Add a comment to a post
 exports.addComment = async (req, res) => {
   try {
