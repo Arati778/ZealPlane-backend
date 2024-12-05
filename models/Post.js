@@ -26,6 +26,10 @@ const PostSchema = new mongoose.Schema({
   author: { type: String },
   timestamp: { type: Date, default: Date.now },
   votes: { type: [VoteSchema], default: [] }, // Array of votes
+  upvoteCount: {
+    type: Number,
+    default: 0,
+  },
   comments: { type: [CommentSchema], default: [] },
   image: { type: String },
 });

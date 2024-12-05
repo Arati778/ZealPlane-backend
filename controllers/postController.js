@@ -143,10 +143,14 @@ exports.updatePost = async (req, res) => {
 exports.deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: "Post not found" });
 
-    await post.remove();
-    res.json({ msg: "Post removed" });
+    if (!post) {
+      return res.status(404).json({ msg: "Post not found" });
+    }
+
+    await Post.deleteOne({ _id: req.params.id }); // Correct method to delete the post
+
+    res.json({ msg: "Post removed successfully" });
   } catch (err) {
     console.error("Error deleting post:", err.message);
     res.status(500).send("Server Error");
@@ -154,25 +158,15 @@ exports.deletePost = async (req, res) => {
 };
 
 exports.updateVotes = async (req, res) => {
-  // Check if user information is available
   if (!req.user || !req.user.uniqueId) {
     return res.status(400).json({ msg: "User ID is missing" });
   }
 
   const uniqueId = req.user.uniqueId; // Fetch userId from the token
-  const { voteType } = req.body; // Expect voteType to be 1 for upvote or -1 for downvote
-
-  console.log("User ID:", uniqueId);
-  console.log("Vote Type:", voteType);
 
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: "Post not found" });
-
-    // Ensure the voteType is valid (either 1 or -1)
-    if (![1, -1].includes(voteType)) {
-      return res.status(400).json({ msg: "Invalid vote type" });
-    }
 
     // Find if the user has already voted
     const existingVoteIndex = post.votes.findIndex(
@@ -180,28 +174,27 @@ exports.updateVotes = async (req, res) => {
     );
 
     if (existingVoteIndex !== -1) {
-      // User has already voted, update the vote value
-      const existingVote = post.votes[existingVoteIndex];
-      if (existingVote.voteValue === voteType) {
-        // Undo the vote (i.e., remove the user's vote)
-        post.votes.splice(existingVoteIndex, 1);
-      } else {
-        // Change the vote (i.e., update the user's vote)
-        post.votes[existingVoteIndex].voteValue = voteType;
-      }
+      // User has already upvoted, undo the vote
+      post.votes.splice(existingVoteIndex, 1);
+      post.upvoteCount = Math.max(0, post.upvoteCount - 1);
     } else {
-      // New vote, add it to the votes array
+      // Add a new upvote
       post.votes.push({
-        uniqueId: uniqueId, // User's unique ID
-        voteValue: voteType, // 1 for upvote, -1 for downvote
+        uniqueId,
+        voteValue: 1,
         timestamp: new Date(),
       });
+
+      post.upvoteCount += 1;
     }
 
-    // Save the post with the updated votes array
+    // Save the post with updated votes
     const updatedPost = await post.save();
-    res.json({ votesCount: updatedPost.votes }); // Send updated vote count
-    console.log("updated vote count is", post.votes);
+
+    res.json({
+      upvoteCount: updatedPost.upvoteCount,
+      votes: updatedPost.votes,
+    });
   } catch (err) {
     console.error("Error updating votes:", err.message);
     res.status(500).send("Server Error");
@@ -307,9 +300,36 @@ exports.addComment = async (req, res) => {
   }
 };
 
-// Update a comment
 exports.updateComment = async (req, res) => {
   const { commentId, body } = req.body;
+  const user = req.user; // Assuming you extract user info from the token in middleware
+
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: "Post not found" });
+
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ msg: "Comment not found" });
+    console.log("comment are not found");
+
+    // Check if the username matches the comment's username
+    if (comment.uniqueId !== user.uniqueId) {
+      return res.status(403).json({ msg: "Unauthorized action" });
+    }
+
+    comment.body = body;
+    await post.save();
+
+    res.json(post.comments);
+  } catch (err) {
+    console.error("Error updating comment:", err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  const { commentId } = req.params;
+  const user = req.user; // Assuming you extract user info from the token in middleware
 
   try {
     const post = await Post.findById(req.params.id);
@@ -318,28 +338,18 @@ exports.updateComment = async (req, res) => {
     const comment = post.comments.id(commentId);
     if (!comment) return res.status(404).json({ msg: "Comment not found" });
 
-    comment.body = body;
+    // Check if the username matches the comment's username
+    if (comment.uniqueId !== user.uniqueId) {
+      return res.status(403).json({ msg: "Unauthorized action" });
+    }
+
+    // Filter out the comment
+    post.comments = post.comments.filter((c) => c._id.toString() !== commentId);
     await post.save();
 
     res.json(post.comments);
   } catch (err) {
-    res.status(500).send("Server Error");
-  }
-};
-
-// Delete a comment from a post
-exports.deleteComment = async (req, res) => {
-  const { commentId } = req.params;
-
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: "Post not found" });
-
-    post.comments = post.comments.filter((comment) => comment._id != commentId);
-    await post.save();
-
-    res.json(post.comments);
-  } catch (err) {
+    console.error("Error deleting comment:", err.message);
     res.status(500).send("Server Error");
   }
 };

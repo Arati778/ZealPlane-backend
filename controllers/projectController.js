@@ -368,10 +368,12 @@ const updateComment = async (req, res) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // // Check if the user is the owner of the comment
-    // if (comment.userId!== userId) {
-    //   return res.status(403).json({ message: "You can only edit your own comment" });
-    // }
+    // Check if the user is the owner of the comment
+    if (comment.userId !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own comment" });
+    }
 
     // Update the comment text
     comment.commentText = commentText; // Update the commentText field
