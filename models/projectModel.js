@@ -66,6 +66,7 @@ const projectSchema = new mongoose.Schema(
       type: [{ uniqueId: String }], // Added uniqueId for users who liked the project
       default: [],
     },
+    views: { type: Number, default: 0 },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

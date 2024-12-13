@@ -23,7 +23,17 @@ const projectUpload = require("../midleware/projectUpload");
 router.get("/", getAllProjects);
 
 // Route to get project by projectId
-router.get("/id/:projectId", ValidateToken, getProjectById);
+router.get(
+  "/id/:projectId",
+  (req, res, next) => {
+    if (req.headers.authorization) {
+      ValidateToken(req, res, next); // Apply the ValidateToken middleware if a token is provided
+    } else {
+      next(); // Skip the ValidateToken if no token is provided
+    }
+  },
+  getProjectById
+);
 
 // Route to get projects by username
 router.get("/username/:username", getProjectsByUsername);

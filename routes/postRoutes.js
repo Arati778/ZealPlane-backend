@@ -14,7 +14,7 @@ router.post(
   ValidateToken,
   postController.createPost
 );
-router.put("/:id", postController.updatePost);
+router.put("/:id", ValidateToken, postController.updatePost);
 router.delete("/:id", postController.deletePost);
 router.put("/votes/:id", ValidateToken, postController.updateVotes);
 // Route to check if the user has voted

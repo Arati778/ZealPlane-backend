@@ -1,15 +1,47 @@
 const asynchandler = require("express-async-handler");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
+
+// Temporary storage for OTPs
+const otpStore = new Map();
+
+const sendOtpEmail = async (email, otp) => {
+  try {
+    // Configure nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Use your email service
+      auth: {
+        user: "krishnakumar050.kk@gmail.com", // Replace with your email
+        pass: "otscznwlkunodhty", // Replace with your email password or app password
+      },
+    });
+
+    // Email content
+    const mailOptions = {
+      from: "krishnakumar050.kk@gmail.com",
+      to: email,
+      subject: "Your OTP for Registration",
+      text: `Your OTP for registration is: ${otp}`,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log("OTP sent to:", email); // Log success
+  } catch (error) {
+    console.error("Error sending OTP email:", error); // Log any errors
+  }
+};
 
 const registerUser = asynchandler(async (req, res) => {
   const {
     username,
     email,
     password,
+    otp,
     fullName,
     description,
     dob,
@@ -24,14 +56,13 @@ const registerUser = asynchandler(async (req, res) => {
 
   console.log("Register User Request Body:", req.body);
 
-  // Check for required fields
-  if (!username || !email || !password) {
-    res.status(400);
-    console.log("Missing required fields");
-    throw new Error("Username, email, and password are mandatory!");
-  }
+  // if (!username || !email || !password) {
+  //   res.status(400);
+  //   console.log("Missing required fields");
+  //   throw new Error("Username, email, and password are mandatory!");
+  // }
 
-  // Check if the username already exists
+  // Step 2: Check if the username or email already exists
   const usernameExists = await User.findOne({ username });
   if (usernameExists) {
     res.status(400);
@@ -39,7 +70,6 @@ const registerUser = asynchandler(async (req, res) => {
     throw new Error("Username already taken!");
   }
 
-  // Check if the email is already registered
   const userAvailable = await User.findOne({ email });
   if (userAvailable) {
     res.status(400);
@@ -47,15 +77,41 @@ const registerUser = asynchandler(async (req, res) => {
     throw new Error("User with this email already registered!");
   }
 
-  // Hash the password
+  // Step 3: OTP Verification
+  if (!otp) {
+    // Generate OTP if not provided
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    otpStore.set(email, generatedOtp); // Store OTP temporarily
+
+    console.log(`Generated OTP for ${email}: ${generatedOtp}`);
+
+    // Send OTP to user's email
+    await sendOtpEmail(email, generatedOtp);
+
+    return res.status(200).json({ message: "OTP sent to email!" });
+  } else {
+    // Verify the provided OTP
+    const storedOtp = otpStore.get(email);
+
+    if (!storedOtp || parseInt(otp) !== storedOtp) {
+      res.status(400);
+      console.log("Invalid or expired OTP");
+      throw new Error("Invalid or expired OTP!");
+    }
+
+    // OTP is valid; remove from store
+    otpStore.delete(email);
+  }
+
+  // Step 4: Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
   console.log("Hashed Password:", hashedPassword);
 
-  // Generate a unique ID and set user status
+  // Step 5: Generate unique ID and status
   const uniqueId = uuidv4();
-  const status = `Active-${uniqueId}`; // Example status format
+  const status = `Active-${uniqueId}`;
 
-  // Create a new user
+  // Step 6: Create a new user
   const user = await User.create({
     username,
     email,
@@ -76,7 +132,7 @@ const registerUser = asynchandler(async (req, res) => {
 
   console.log(`User created: ${user}`);
 
-  // Send response
+  // Step 7: Send success response
   if (user) {
     res.status(201).json({
       _id: user.id,
@@ -141,7 +197,7 @@ const googleLoginUser = asynchandler(async (req, res) => {
           user = new User({
             fullName: name, // Save Google name in fullName
             email: email,
-            profilePic: picture,
+            profilePic: user.profilePic || picture,
             googleId: googleId,
             username: username, // Save the username
             password: "", // Password not required for Google-authenticated users
@@ -171,16 +227,30 @@ const googleLoginUser = asynchandler(async (req, res) => {
       if (!user.fullName) {
         user.fullName = name;
       }
-      user.profilePic = picture;
+      if (!user.profilePic) {
+        user.profilePic = picture;
+      }
+
       await user.save();
       console.log("User updated with Google info:", user);
     }
 
     // Generate a JWT for your application
     const accessToken = jwt.sign(
-      { userId: user._id, email: user.email, uniqueId: user.uniqueId },
+      {
+        userId: user._id,
+        email: user.email,
+        uniqueId: user.uniqueId,
+        username: user.username,
+        profilePic: user.profilePic,
+      },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" } // Token expiry time
+      { expiresIn: "1h" } // Access token expires in 5 seconds
+    );
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "30d" } // Refresh token expires in 30 days
     );
 
     console.log("Generated access token:", accessToken);
@@ -192,8 +262,9 @@ const googleLoginUser = asynchandler(async (req, res) => {
         fullName: user.fullName,
         username: user.username, // Include the unique username in the response
         id: user.uniqueId,
+        token: accessToken,
+        refreshToken: refreshToken,
       },
-      token: accessToken,
     });
   } catch (error) {
     console.error("Error during Google sign-in:", error);
@@ -287,7 +358,7 @@ const currentUser = asynchandler(async (req, res) => {
 
 const getUserById = asynchandler(async (req, res) => {
   const { id } = req.params; // ID of the user being accessed
-  const uniqueIdFromToken = req.user.uniqueId; // Unique ID from the token
+  const uniqueIdFromToken = req.user ? req.user.uniqueId : null; // Unique ID from the token, if available
 
   console.log(`Request to get user by ID: ${id}`);
 
@@ -296,7 +367,7 @@ const getUserById = asynchandler(async (req, res) => {
   console.log("User found by ID:", user);
 
   if (user) {
-    // Determine the user's status based on whether the IDs match
+    // If no token or no match, status is "visitor"
     const status = uniqueIdFromToken === id ? "admin" : "visitor";
 
     // Respond with user data and status

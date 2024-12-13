@@ -31,14 +31,29 @@ const getProjectById = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    // Get uniqueId from the token (assumed to be added to the req.user by authentication middleware)
-    const uniqueIdFromToken = req.user.uniqueId;
+    // Increment the view count every time the project is accessed
+    await Project.findByIdAndUpdate(
+      project._id,
+      { $inc: { views: 1 } }, // Increment the views by 1
+      { new: true } // Return the updated project
+    );
+
+    // Get uniqueId from the token (if present)
+    const uniqueIdFromToken = req.user ? req.user.uniqueId : null;
 
     // Check if uniqueId is present in the project
     if (!project.uniqueId) {
       return res.status(200).json({
         project,
         status: "visitor", // No uniqueId in project, status as visitor
+      });
+    }
+
+    // If there is no token, return the project with status "visitor"
+    if (!uniqueIdFromToken) {
+      return res.status(200).json({
+        project,
+        status: "visitor", // User is a visitor, no authentication info available
       });
     }
 
@@ -351,7 +366,7 @@ const commentOnProject = async (req, res) => {
 const updateComment = async (req, res) => {
   const { projectId, commentId } = req.params; // Extract projectId and commentId from request params
   const { commentText } = req.body; // Get the updated comment text from the request body
-  const userId = req.user.userId; // Get the authenticated user ID from the token
+  const uniqueId = req.user.uniqueId; // Get the authenticated user ID from the token
 
   try {
     // Find the project by its projectId
@@ -369,13 +384,13 @@ const updateComment = async (req, res) => {
     }
 
     // Check if the user is the owner of the comment
-    if (comment.userId !== userId) {
+    if (comment.uniqueId !== uniqueId) {
       return res
         .status(403)
         .json({ message: "You can only edit your own comment" });
     }
 
-    // Update the comment text
+    // Update   the comment text
     comment.commentText = commentText; // Update the commentText field
 
     // Save the updated project

@@ -28,7 +28,19 @@ router.post("/google-login", googleLoginUser); // New route for Google login
 router.get("/me", ValidateToken, currentUser);
 
 // Get user by ID
-router.get("/:id", ValidateToken, getUserById);
+router.get(
+  "/:id",
+  (req, res, next) => {
+    if (req.headers.authorization) {
+      // If the token is present, apply the ValidateToken middleware
+      ValidateToken(req, res, next);
+    } else {
+      // If no token is provided, skip the ValidateToken and proceed directly to getUserById
+      next();
+    }
+  },
+  getUserById
+);
 
 // Update user (with profilePic upload)
 // Ensure token is validated before handling file upload
